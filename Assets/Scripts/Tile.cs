@@ -56,19 +56,21 @@ public class Tile : MonoBehaviour
         distance = 0;
     }
 
-    public void FindNeighbors()
+    public void FindNeighbors(int type)
     {
         Reset();
 
-        CheckTile(Vector3.forward);
-        CheckTile(-Vector3.forward);
-        CheckTile(Vector3.right);
-        CheckTile(-Vector3.right);
+        CheckTile(Vector3.forward, type);
+        CheckTile(-Vector3.forward, type);
+        CheckTile(Vector3.right, type);
+        CheckTile(-Vector3.right, type);
 
     }
 
-    public void CheckTile(Vector3 dir)
+    public void CheckTile(Vector3 dir, int type)
     {
+        
+
         Vector3 halfExtents = new Vector3(0.25f, 0.25f, 0.25f);
         Collider[] colliders = Physics.OverlapBox(transform.position + dir, halfExtents);
 
@@ -79,13 +81,18 @@ public class Tile : MonoBehaviour
             {
                 if (tile.walkable)
                 {
-                    RaycastHit hit;
-
-                    if (!Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1))
+                    RaycastHit[] hits;
+                    hits = Physics.RaycastAll(tile.transform.position, new Vector3(0, 0.5f, 0));
+                    if (type != 0) adjacencyList.Add(tile);
+                    else if (hits.Length == 0) adjacencyList.Add(tile);
+                    else foreach (RaycastHit hit in hits)
                     {
-                        adjacencyList.Add(tile);
+                        if (hit.collider.gameObject.tag != "Lifie")
+                        {
+                            adjacencyList.Add(tile);
+                            break;
+                        }
                     }
-
                 }
             }
         }
