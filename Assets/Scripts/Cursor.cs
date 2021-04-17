@@ -71,6 +71,8 @@ public class Cursor : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space)) { Click(); return; }
 
+        if (Input.GetKeyDown(KeyCode.Escape)) { if (SelectedLifie) SelectedLifie.transform.position = CancelActionBackup; Reset(); return; }
+
         HoveringLifie = GetHoveringLifie();
         HoveringTile = GetHoveringTile();
         CheckForInfoUI();
@@ -90,11 +92,16 @@ public class Cursor : MonoBehaviour
         GameObject.Find("InfoUI").GetComponent<UI>().AskMovement(InfoUIShownPosition, UITransitionDelay);
         GameObject.Find("HoveringInfoSprite").GetComponent<SpriteRenderer>().sprite = HoveringLifie.GetComponent<SpriteRenderer>().sprite;
         GameObject.Find("HoveringLifieName").GetComponent<Text>().text = HoveringLifie.Name;
-        GameObject.Find("HoveringLifieType").GetComponent<Text>().text = HoveringLifie.TypeToString();
+        GameObject.Find("HoveringLifieElement").GetComponent<Text>().text = HoveringLifie.TypeToString();
         GameObject.Find("HoveringLifieLevel").GetComponent<Text>().text = HoveringLifie.LevelToString();
         GameObject.Find("HoveringLifieLP").GetComponent<Text>().text = HoveringLifie.LPToString() + " / " + HoveringLifie.TotalLPToString();
-        GameObject.Find("HoveringLifieAP").GetComponent<Text>().text = HoveringLifie.APToString();
+        GameObject.Find("HoveringLifieAP").GetComponent<Text>().text = HoveringLifie.APToString() + " / " + HoveringLifie.TotalAPToString();
         GameObject.Find("HoveringLifieStatus").GetComponent<Text>().text = HoveringLifie.StatusConditionToString();
+        GameObject.Find("HoveringLifieMovementCapacity").GetComponent<Text>().text = HoveringLifie.MovementCapacityToString();
+        GameObject.Find("HoveringLifieStrength").GetComponent<Text>().text = HoveringLifie.StrengthToString();
+        GameObject.Find("HoveringLifieDefense").GetComponent<Text>().text = HoveringLifie.DefenseToString();
+        GameObject.Find("HoveringLifieMagic").GetComponent<Text>().text = HoveringLifie.MagicToString();
+        GameObject.Find("HoveringLifieMagicDefense").GetComponent<Text>().text = HoveringLifie.MagicDefenseToString();
 
     }
     private void HideHoveringInfo()
@@ -175,12 +182,15 @@ public class Cursor : MonoBehaviour
             if (!SelectedLifie)
             {
                 SelectLifie();
-                if (SelectedLifie) SelectedLifie.FindSelectableTiles(0);
-                int i = 0;
-                foreach (Transform child in GameObject.Find("AttackButtons").transform)
+                if (SelectedLifie)
                 {
-                    child.Find("Canvas").transform.Find("Text").GetComponent<Text>().text = GameObject.Find("AttackDatabase").GetComponent<AttackDatabase>().GetAttack(SelectedLifie.GetAttack(i)).Name;
-                    i++;
+                    SelectedLifie.FindSelectableTiles(0);
+                    int i = 0;
+                    foreach (Transform child in GameObject.Find("AttackButtons").transform)
+                    {
+                        child.Find("Canvas").transform.Find("Text").GetComponent<Text>().text = GameObject.Find("AttackDatabase").GetComponent<AttackDatabase>().GetAttack(SelectedLifie.GetAttack(i)).Name;
+                        i++;
+                    }
                 }
             } else if (SelectingTarget)
             {
@@ -188,7 +198,6 @@ public class Cursor : MonoBehaviour
                 {
                     if (SelectedLifie.Attack(HoveringLifie, SelectedAttack))
                     {
-                        GameObject.Find("MetaObject").GetComponent<MetaObject>().ResetTiles();
                         SelectedLifie.Disable();
                         Reset();
                     }
@@ -196,7 +205,6 @@ public class Cursor : MonoBehaviour
             }
             else
             {
-                CancelActionBackup = new Vector3(SelectedLifie.transform.position.x, SelectedLifie.transform.position.y, SelectedLifie.transform.position.z);
                 if (SelectedLifie.MoveTo(HoveringTile))
                 {
                     //SelectedLifie = null;
@@ -225,7 +233,8 @@ public class Cursor : MonoBehaviour
                     }
                     if (hit.collider.gameObject.name == "CancelButton")
                     {
-                        CancelAction();
+                        SelectedLifie.transform.position = CancelActionBackup;
+                        Reset();
                         break;
                     }
 
@@ -279,14 +288,14 @@ public class Cursor : MonoBehaviour
     private void WaitAction()
     {
         SelectedLifie.Disable();
-        HideActionUI();
-        SelectedLifie = null;
+        Reset();
     }
 
     private void CancelAction()
     {
-        SelectedLifie.transform.position = CancelActionBackup;
-        SelectedLifie.FindSelectableTiles(0);
+        //SelectedLifie.transform.position = CancelActionBackup;
+        //SelectedLifie.FindSelectableTiles(0);
+        Reset();
         HideActionUI();
     }
 
@@ -296,6 +305,7 @@ public class Cursor : MonoBehaviour
         if (!HoveringLifie.CanWalk) return;
         
         SelectedLifie = HoveringLifie;
+        CancelActionBackup = new Vector3(SelectedLifie.transform.position.x, SelectedLifie.transform.position.y, SelectedLifie.transform.position.z);
     }
 
     private void Move(string dir)
@@ -389,5 +399,8 @@ public class Cursor : MonoBehaviour
         SelectedLifie = null;
         SelectedAttack = null;
         CancelActionBackup = new Vector3();
+        GameObject.Find("MetaObject").GetComponent<MetaObject>().ResetTiles();
+        HideActionUI();
+        HideAttackUI();
     }
 }

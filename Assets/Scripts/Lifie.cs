@@ -234,8 +234,14 @@ public class Lifie : MonoBehaviour
     }
     public string APToString()
     {
-        return "AP: " + AP;
+        return "AP: " + (int) Math.Ceiling(AP);
     }
+    
+    public string TotalAPToString()
+    {
+        return "" + TotalAP;
+    }
+
     public string LPToString()
     {
         return "LP: " + (int) Math.Ceiling(LP);
@@ -259,6 +265,28 @@ public class Lifie : MonoBehaviour
     public string StatusConditionToString()
     {
         return StatusInString[StatusCondition];
+    }
+
+    public string MovementCapacityToString()
+    {
+        return "Movement: " + MovementCapacity;
+    }
+    
+    public string StrengthToString()
+    {
+        return "Strength: " + Strength;
+    }
+    public string DefenseToString()
+    {
+        return "Defense: " + Defense;
+    }
+    public string MagicToString()
+    {
+        return "Magic: " + Magic;
+    }
+    public string MagicDefenseToString()
+    {
+        return "Magic Defense: " + MagicDefense;
     }
 
     public bool MoveTo(Tile target)
