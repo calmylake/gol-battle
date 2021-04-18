@@ -113,6 +113,7 @@ public class MetaObject : MonoBehaviour
             Lifie.GetComponent<Lifie>().Disable();
         }
 
+        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("Next Turn! Select a Lifie.");
 
     }
 

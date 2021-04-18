@@ -8,6 +8,7 @@ public class Cursor : MonoBehaviour
 {
     public bool SelectingTarget;
     Lifie SelectedLifie;
+    Attack HoveringAttack;
     Attack SelectedAttack;
     Vector3 CancelActionBackup;
 
@@ -34,15 +35,15 @@ public class Cursor : MonoBehaviour
         ColorStandard = new Color(R, G, B);
         ColorHover = new Color(G, R, B);
         ColorSelected = new Color(B, R, G);
-        UITransitionDelay = 6;
+        UITransitionDelay = 0.08f;
 
         InfoUIShownPosition = new Vector3(9f, 2, 3.5f);
         InfoUIHiddenPosition = GameObject.Find("InfoUI").transform.position;
 
-        ActionUIShownPosition = new Vector3(13.75f, 2, 5.5f);
+        ActionUIShownPosition = new Vector3(14, 2, 5.75f);
         ActionUIHiddenPosition = GameObject.Find("ActionUI").transform.position;
 
-        AttackUIShownPosition = new Vector3(13.75f, 2, 5.5f);
+        AttackUIShownPosition = new Vector3(14, 2, 5.75f);
         AttackUIHiddenPosition = GameObject.Find("AttackUI").transform.position;
 
         Reset();
@@ -71,11 +72,15 @@ public class Cursor : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space)) { Click(); return; }
 
-        if (Input.GetKeyDown(KeyCode.Escape)) { if (SelectedLifie) SelectedLifie.transform.position = CancelActionBackup; Reset(); return; }
+        if (Input.GetKeyDown(KeyCode.Escape)) { if (SelectedLifie) CancelAction(); Reset(); return; }
 
         HoveringLifie = GetHoveringLifie();
         HoveringTile = GetHoveringTile();
         CheckForInfoUI();
+        if (isAttackUIOpen)
+        {
+            HoveringAttack = GetHoveringAttack();
+        }
 
     }
 
@@ -175,6 +180,60 @@ public class Cursor : MonoBehaviour
         return null;
     }
 
+    private Attack GetHoveringAttack()
+    {
+        if (!SelectedLifie) return null;
+        int iAtk = 0;
+        RaycastHit[] hits;
+        hits = Physics.RaycastAll(GameObject.Find("AttackCursor").transform.position, new Vector3(0, -1, 0));
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider.gameObject.name == "Attack0")
+            {
+                iAtk = 0;
+                break;
+            }
+            if (hit.collider.gameObject.name == "Attack1")
+            {
+                iAtk = 1;
+                break;
+            }
+            if (hit.collider.gameObject.name == "Attack2")
+            {
+                iAtk = 2;
+                break;
+            }
+            if (hit.collider.gameObject.name == "Attack3")
+            {
+                iAtk = 3;
+                break;
+            }
+
+        }
+        Attack tempAttack = GameObject.Find("AttackDatabase").GetComponent<AttackDatabase>().GetAttack(SelectedLifie.GetAttack(iAtk));
+        string categorystring = "?";
+        switch (tempAttack.Category)
+        {
+            case 1:
+                categorystring = "Magical";
+                break;
+            case 2:
+                categorystring = "Physical";
+                break;
+            default:
+                categorystring = "Neutral";
+                break;
+        }
+        GameObject.Find("Category").GetComponent<Text>().text = "Category: " + categorystring;
+        GameObject.Find("Power").GetComponent<Text>().text = "Power: " + tempAttack.Power;
+        GameObject.Find("APDrain").GetComponent<Text>().text = "AP Drain: " + tempAttack.APDrain;
+        GameObject.Find("Element").GetComponent<Text>().text = "Element: " + tempAttack.Element;
+        GameObject.Find("RangeCapacity").GetComponent<Text>().text = "Range capacity: " + tempAttack.RangeCapacity;
+        GameObject.Find("Description").GetComponent<Text>().text = tempAttack.Description;
+        return tempAttack;
+        
+    }
+
     private void Click()
     {
         if (!isActionUIOpen && !isAttackUIOpen)
@@ -223,53 +282,26 @@ public class Cursor : MonoBehaviour
                 {
                     if (hit.collider.gameObject.name == "AttackButton")
                     {
+                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("Which attack do you choose?");
                         AttackAction();
                         break;
                     }
                     if (hit.collider.gameObject.name == "WaitButton")
                     {
+                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(SelectedLifie + " is waiting.");
                         WaitAction();
                         break;
                     }
                     if (hit.collider.gameObject.name == "CancelButton")
                     {
-                        SelectedLifie.transform.position = CancelActionBackup;
-                        Reset();
+                        CancelAction();
                         break;
                     }
 
                 }
             } else if (isAttackUIOpen) {
-                //attack
-                int tempAttack = 1;
-                RaycastHit[] hits;
-                hits = Physics.RaycastAll(GameObject.Find("AttackCursor").transform.position, new Vector3(0, -1, 0));
-                foreach (RaycastHit hit in hits)
-                {
-                    if (hit.collider.gameObject.name == "Attack0")
-                    {
-                        tempAttack = 0;
-                        break;
-                    }
-                    if (hit.collider.gameObject.name == "Attack1")
-                    {
-                        tempAttack = 1;
-                        break;
-                    }
-                    if (hit.collider.gameObject.name == "Attack2")
-                    {
-                        tempAttack = 2;
-                        break;
-                    }
-                    if (hit.collider.gameObject.name == "Attack3")
-                    {
-                        tempAttack = 3;
-                        break;
-                    }
-
-                }
-                SelectedAttack = GameObject.Find("AttackDatabase").GetComponent<AttackDatabase>().GetAttack(SelectedLifie.GetAttack(tempAttack));
-                Debug.Log("Selected attack: "+SelectedAttack.Name);
+                SelectedAttack = HoveringAttack;
+                GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("Selected attack: "+SelectedAttack.Name+".");
                 HideAttackUI();
                 SelectedLifie.FindSelectableAttack(SelectedAttack.RangeCapacity);
                 SelectingTarget = true;
@@ -293,10 +325,9 @@ public class Cursor : MonoBehaviour
 
     private void CancelAction()
     {
-        //SelectedLifie.transform.position = CancelActionBackup;
-        //SelectedLifie.FindSelectableTiles(0);
+        SelectedLifie.transform.position = CancelActionBackup;
         Reset();
-        HideActionUI();
+        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("Canceled the action.");
     }
 
     private void SelectLifie()
@@ -306,6 +337,7 @@ public class Cursor : MonoBehaviour
         
         SelectedLifie = HoveringLifie;
         CancelActionBackup = new Vector3(SelectedLifie.transform.position.x, SelectedLifie.transform.position.y, SelectedLifie.transform.position.z);
+        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("Selected "+SelectedLifie.Name+".");
     }
 
     private void Move(string dir)

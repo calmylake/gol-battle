@@ -326,15 +326,25 @@ public class Lifie : MonoBehaviour
                 {
                     if (hit.collider.gameObject.GetComponent<Tile>().selectable)
                     {
-                        float multiplier = ElementMultiplier(Element, targetLifie.Element);
-                        float damage = CalculateDamage(attack.Power, attack.Category, targetLifie) * multiplier;
-                        targetLifie.LP -= damage;
-                        AP -= attack.APdrain;
-                        if (multiplier > 1) Debug.Log("Super effective!");
-                        else if (multiplier < 1) Debug.Log("Not very effective...");
-                        else Debug.Log(targetLifie.Name + "took "+ (int) Math.Round(damage, MidpointRounding.AwayFromZero) +" damage from " + Name);
+                        if(attack.Category != 3)
+                        {
+                            float multiplier = ElementMultiplier(Element, targetLifie.Element);
+                            float damage = CalculateDamage(attack.Power, attack.Category, targetLifie) * multiplier;
+                            targetLifie.LP -= damage;
+                            AP -= attack.APDrain;
+                            string logtext = targetLifie.Name + " took " + (int)Math.Round(damage, MidpointRounding.AwayFromZero) + " damage from " + Name;
+                            if (multiplier > 1) logtext = logtext + "!\nSuper effective!";
+                            else if (multiplier < 1) logtext = logtext + "...\nNot very effective...";
+                            else logtext = logtext + ".";
 
-                        return true;
+                            GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(logtext);
+
+                            return true;
+                        } else
+                        {
+                            //increase/decrease LP, AP
+                            //increase/decrease strength, defense, magic, magic defense
+                        }
                     }
                 }
             }
@@ -374,6 +384,6 @@ public class Lifie : MonoBehaviour
     public void Die()
     {
         Destroy(gameObject);
-        Debug.Log("destroyed " + Name);
+        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(Name + " fainted!");
     }
 }

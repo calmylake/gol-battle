@@ -8,7 +8,7 @@ public class Attack
     public string Name;
     public int Category;
     public int Power;
-    public int APdrain;
+    public int APDrain;
     public int Element;
     public int RangeCapacity;
     public string Description;
@@ -19,7 +19,7 @@ public class Attack
         Name = name;
         Category = category;
         Power = power;
-        APdrain = apdrain;
+        APDrain = apdrain;
         Element = element;
         RangeCapacity = rangecapacity;
         Description = description;

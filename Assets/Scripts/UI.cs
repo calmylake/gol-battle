@@ -13,7 +13,7 @@ public class UI : MonoBehaviour
 
     void Start()
     {
-        
+
     }
 
     void Update()
@@ -26,9 +26,12 @@ public class UI : MonoBehaviour
         if (isMoving)
         {
             Move();
-            if(finalPos.x - transform.position.x < MovementPrecision && finalPos.z - transform.position.z < MovementPrecision && finalPos.y - transform.position.y < MovementPrecision)
+            if (finalPos.x - transform.position.x < MovementPrecision &&
+                finalPos.z - transform.position.z < MovementPrecision &&
+                finalPos.y - transform.position.y < MovementPrecision)
             {
                 isMoving = false;
+                finalPos = Vector3.zero;
             }
         }
     }
@@ -42,6 +45,6 @@ public class UI : MonoBehaviour
 
     public void Move()
     {
-        transform.position += (finalPos - transform.position)/MovementDelay;
+        transform.position += Time.deltaTime * (finalPos - transform.position)/MovementDelay;
     }
 }
