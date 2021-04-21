@@ -97,7 +97,7 @@ public class Cursor : MonoBehaviour
         GameObject.Find("InfoUI").GetComponent<UI>().AskMovement(InfoUIShownPosition, UITransitionDelay);
         GameObject.Find("HoveringInfoSprite").GetComponent<SpriteRenderer>().sprite = HoveringLifie.GetComponent<SpriteRenderer>().sprite;
         GameObject.Find("HoveringLifieName").GetComponent<Text>().text = HoveringLifie.Name;
-        GameObject.Find("HoveringLifieElement").GetComponent<Text>().text = HoveringLifie.TypeToString();
+        GameObject.Find("HoveringLifieElement").GetComponent<Text>().text = HoveringLifie.ElementToString();
         GameObject.Find("HoveringLifieLevel").GetComponent<Text>().text = HoveringLifie.LevelToString();
         GameObject.Find("HoveringLifieLP").GetComponent<Text>().text = HoveringLifie.LPToString() + " / " + HoveringLifie.TotalLPToString();
         GameObject.Find("HoveringLifieAP").GetComponent<Text>().text = HoveringLifie.APToString() + " / " + HoveringLifie.TotalAPToString();
@@ -303,7 +303,7 @@ public class Cursor : MonoBehaviour
                 SelectedAttack = HoveringAttack;
                 GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("Selected attack: "+SelectedAttack.Name+".");
                 HideAttackUI();
-                SelectedLifie.FindSelectableAttack(SelectedAttack.RangeCapacity);
+                SelectedLifie.FindSelectableAttack(SelectedAttack.RangeCapacity, SelectedAttack.isStatusAttack());
                 SelectingTarget = true;
             }
             

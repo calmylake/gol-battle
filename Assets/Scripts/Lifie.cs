@@ -165,7 +165,7 @@ public class Lifie : MonoBehaviour
 
     }
 
-    public void FindSelectableAttack(int rangeCapacity)
+    public void FindSelectableAttack(int rangeCapacity, bool isStatsAttack)
     {
         if (GameObject.Find("MetaObject").GetComponent<MetaObject>().isFirstTime())
         {
@@ -210,22 +210,9 @@ public class Lifie : MonoBehaviour
         return MovementCapacity;
     }
 
-    public string TypeToString()
+    public string ElementToString()
     {
         return GameObject.Find("ElementDatabase").GetComponent<ElementDatabase>().GetElement(Element).Name;
-    }
-
-    public float ElementMultiplier(int elementAttacker, int elementDefender)
-    {
-        float multiplier = 1;
-        Element defender = GameObject.Find("ElementDatabase").GetComponent<ElementDatabase>().GetElement(elementDefender);
-
-        if (defender.Strengths.Contains(elementAttacker)) 
-            multiplier = 0.5f;
-        else if (defender.Weaknesses.Contains(elementAttacker)) 
-            multiplier = 2;
-
-        return multiplier;
     }
 
     public string LevelToString()
@@ -315,40 +302,74 @@ public class Lifie : MonoBehaviour
 
     public bool Attack(Lifie targetLifie, Attack attack)
     {
-        if ( !( (gameObject.GetComponent<LifiePlayer>() && targetLifie.gameObject.GetComponent<LifiePlayer>()) ||
-            (gameObject.GetComponent<LifieCPU>() && targetLifie.gameObject.GetComponent<LifieCPU>()) ) )
+        if (
+            (
+                attack.isStatusAttack() &&
+                (
+                    (gameObject.GetComponent<LifiePlayer>() && targetLifie.gameObject.GetComponent<LifieCPU>()) ||
+                    (gameObject.GetComponent<LifieCPU>() && targetLifie.gameObject.GetComponent<LifiePlayer>())
+                )
+            ) ||
+            (
+                !attack.isStatusAttack() &&
+                (
+                    (gameObject.GetComponent<LifiePlayer>() && targetLifie.gameObject.GetComponent<LifiePlayer>()) ||
+                    (gameObject.GetComponent<LifieCPU>() && targetLifie.gameObject.GetComponent<LifieCPU>())
+                )
+            )
+            )
         {
-            RaycastHit[] hits;
-            hits = Physics.RaycastAll(targetLifie.transform.position, new Vector3(0, -0.5f, 0));
-            foreach (RaycastHit hit in hits)
+            return false;
+        }
+
+        RaycastHit[] hits;
+        hits = Physics.RaycastAll(targetLifie.transform.position, new Vector3(0, -0.5f, 0));
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider.gameObject.tag == "Tile")
             {
-                if (hit.collider.gameObject.tag == "Tile")
+                if (hit.collider.gameObject.GetComponent<Tile>().selectable)
                 {
-                    if (hit.collider.gameObject.GetComponent<Tile>().selectable)
+                    if(!attack.isStatusAttack())
                     {
-                        if(attack.Category != 3)
-                        {
-                            float multiplier = ElementMultiplier(Element, targetLifie.Element);
-                            float damage = CalculateDamage(attack.Power, attack.Category, targetLifie) * multiplier;
-                            targetLifie.LP -= damage;
-                            AP -= attack.APDrain;
-                            string logtext = targetLifie.Name + " took " + (int)Math.Round(damage, MidpointRounding.AwayFromZero) + " damage from " + Name;
-                            if (multiplier > 1) logtext = logtext + "!\nSuper effective!";
-                            else if (multiplier < 1) logtext = logtext + "...\nNot very effective...";
-                            else logtext = logtext + ".";
+                        float multiplier = ElementMultiplier(Element, targetLifie.Element);
+                        float damage = CalculateDamage(attack.Power, attack.Category, targetLifie) * multiplier;
+                        targetLifie.LP -= damage;
+                        AP -= attack.APDrain;
+                        string logtext = targetLifie.Name + " took " + (int)Math.Round(damage, MidpointRounding.AwayFromZero) + " damage from " + Name;
+                        if (multiplier > 1) logtext = logtext + "!\nSuper effective!";
+                        else if (multiplier < 1) logtext = logtext + "...\nNot very effective...";
+                        else logtext = logtext + ".";
 
-                            GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(logtext);
-
-                            return true;
-                        } else
+                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(logtext);
+                    } else
+                    {
+                        string temps = "";
+                        //stats change
+                        switch (attack.Category)
                         {
-                            //increase/decrease LP, AP
-                            //increase/decrease strength, defense, magic, magic defense
+                            case 3:
+                                //Strength
+                                targetLifie.Strength = (int)Math.Round(targetLifie.Strength + targetLifie.Strength * attack.EffectPower, MidpointRounding.AwayFromZero);
+                                temps = "strength";
+                                break;
+                            case 4:
+                                //Defense
+                                targetLifie.Defense = (int)Math.Round(targetLifie.Defense + targetLifie.Defense * attack.EffectPower, MidpointRounding.AwayFromZero);
+                                temps = "defense";
+                                break;
+                            default:
+                                Debug.Log("Need to setup Lifie.Attack //stats change");
+                                break;
                         }
+                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText
+                            (targetLifie.Name + "'s "+temps+" was increased by "+(int)Math.Round(attack.EffectPower * 100, MidpointRounding.AwayFromZero)+"%.");
                     }
+                    return true;
                 }
             }
         }
+        
         return false;
     }
 
@@ -379,6 +400,18 @@ public class Lifie : MonoBehaviour
         Damage = (7 + Level / 200 * power * s / d) * modifier;
 
         return Damage;
+    }
+    public float ElementMultiplier(int elementAttacker, int elementDefender)
+    {
+        float multiplier = 1;
+        Element defender = GameObject.Find("ElementDatabase").GetComponent<ElementDatabase>().GetElement(elementDefender);
+
+        if (defender.Strengths.Contains(elementAttacker))
+            multiplier = 0.5f;
+        else if (defender.Weaknesses.Contains(elementAttacker))
+            multiplier = 2;
+
+        return multiplier;
     }
 
     public void Die()

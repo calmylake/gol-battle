@@ -12,8 +12,9 @@ public class Attack
     public int Element;
     public int RangeCapacity;
     public string Description;
+    public float EffectPower;
 
-    public Attack(int id, string name, int category, int power, int apdrain, int element, int rangecapacity, string description)
+    public Attack(int id, string name, int category, int power, int apdrain, int element, int rangecapacity, string description, float effectpower = 0)
     {
         Id = id;
         Name = name;
@@ -23,5 +24,12 @@ public class Attack
         Element = element;
         RangeCapacity = rangecapacity;
         Description = description;
+        EffectPower = effectpower;
+    }
+
+    public bool isStatusAttack()
+    {
+        if (Category == 1 || Category == 2) return false;
+        else return true;
     }
 }
