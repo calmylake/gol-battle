@@ -14,13 +14,25 @@ public class Lifie : MonoBehaviour
     public float AP = 0;
     public int StatusCondition = 0;
     public int MovementCapacity = 2;
+
     public int Strength;
     public int Defense;
     public int Magic;
     public int MagicDefense;
 
-    int TotalLP = 0;
-    int TotalAP = 0;
+    public int StrengthModifier;
+    public int DefenseModifier;
+    public int MagicModifier;
+    public int MagicDefenseModifier;
+
+    public int StrengthTileModifier;
+    public int DefenseTileModifier;
+    public int MagicTileModifier;
+    public int MagicDefenseTileModifier;
+
+
+    public int TotalLP = 0;
+    public int TotalAP = 0;
     public bool CanWalk;
 
     //attacks
@@ -86,7 +98,12 @@ public class Lifie : MonoBehaviour
 
         //set to false when there is turn manager
         CanWalk = true;
-    }
+        UpdateTileModifiers();
+        StrengthModifier = 0;
+        DefenseModifier = 0;
+        MagicModifier = 0;
+        MagicDefenseModifier = 0;
+}
     protected void Loop()
     {
         if (LP <= 0)
@@ -95,6 +112,66 @@ public class Lifie : MonoBehaviour
         }
     }
     
+    public void UpdateTileModifiers()
+    {
+        StrengthTileModifier = 0;
+        DefenseTileModifier = 0;
+        MagicTileModifier = 0;
+        MagicDefenseTileModifier = 0;
+
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, -Vector3.up, out hit, 1))
+        {
+            Tile tile = hit.collider.GetComponent<Tile>();
+            switch (tile.type)
+            {
+                //water
+                case 1:
+                    if(!(Element == 1 || Element == 5))
+                    {
+                        StrengthTileModifier = 1;
+                        MagicTileModifier = 1;
+                    }
+                    break;
+                //sand
+                case 2:
+                    if (!(Element == 2 || Element == 3))
+                    {
+                        DefenseTileModifier = 1;
+                        MagicDefenseTileModifier = 1;
+                    }
+                    break;
+                //grass
+                case 3:
+                    if (!(Element == 4 || Element == 6))
+                    {
+                        StrengthTileModifier = 1;
+                        DefenseTileModifier = 1;
+                    }
+                    break;
+                //mountain
+                case 4:
+                    if (!(Element == 7 || Element == 8))
+                    {
+                        StrengthTileModifier = 1;
+                        DefenseTileModifier = 1;
+                    }
+                    break;
+                //storm
+                case 5:
+                    if (!(Element == 9 || Element == 10))
+                    {
+                        MagicTileModifier = 1;
+                        MagicDefenseTileModifier = 1;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        else return;
+    }
+
     public void GetCurrentTile()
     {
         currentTile = GetTargetTile(gameObject);
@@ -221,7 +298,8 @@ public class Lifie : MonoBehaviour
     }
     public string APToString()
     {
-        return "AP: " + (int) Math.Ceiling(AP);
+        if (AP == 1) return "AP: " + (int) Math.Ceiling(AP);
+        else return "AP: " + (int) Math.Round(AP, MidpointRounding.AwayFromZero);
     }
     
     public string TotalAPToString()
@@ -231,7 +309,8 @@ public class Lifie : MonoBehaviour
 
     public string LPToString()
     {
-        return "LP: " + (int) Math.Ceiling(LP);
+        if(LP == 1) return "LP: " + (int) Math.Ceiling(LP);
+        else return "LP: " + (int) Math.Round(LP, MidpointRounding.AwayFromZero);
     }
 
     public string TotalLPToString()
@@ -261,19 +340,77 @@ public class Lifie : MonoBehaviour
     
     public string StrengthToString()
     {
-        return "Strength: " + Strength;
+        return "Strength: " + (int) Math.Round(GetStrength(), MidpointRounding.AwayFromZero);
     }
     public string DefenseToString()
     {
-        return "Defense: " + Defense;
+        return "Defense: " + (int)Math.Round(GetDefense(), MidpointRounding.AwayFromZero);
     }
     public string MagicToString()
     {
-        return "Magic: " + Magic;
+        return "Magic: " + (int)Math.Round(GetMagic(), MidpointRounding.AwayFromZero);
     }
     public string MagicDefenseToString()
     {
-        return "Magic Defense: " + MagicDefense;
+        return "Magic Defense: " + (int)Math.Round(GetMagicDefense(), MidpointRounding.AwayFromZero);
+    }
+
+    public float GetStrength()
+    {
+        return Strength + GetStrengthBonus();
+    }
+    public float GetDefense()
+    {
+        return Defense + GetDefenseBonus();
+    }
+    public float GetMagic()
+    {
+        return Magic + GetMagicBonus();
+    }
+    public float GetMagicDefense()
+    {
+        return MagicDefense + GetMagicDefenseBonus();
+    }
+
+    public float GetStrengthBonus()
+    {
+        float r = 1;
+        if(StrengthModifier >= 0) r *= (StrengthModifier+2)/2.0f;
+        else r *= 2.0f/(Math.Abs(StrengthModifier)+2);
+        if (StrengthTileModifier >= 0) r *= (StrengthTileModifier+2)/2.0f;
+        else r *= 2.0f/(Math.Abs(StrengthTileModifier)+2);
+        r = Strength * r - Strength;
+        return r;
+    }
+    public float GetDefenseBonus()
+    {
+        float r = 1;
+        if (DefenseModifier >= 0) r *= (DefenseModifier + 2) / 2.0f;
+        else r *= 2.0f / (Math.Abs(DefenseModifier) + 2);
+        if (DefenseTileModifier >= 0) r *= (DefenseTileModifier + 2) / 2.0f;
+        else r *= 2.0f / (Math.Abs(DefenseTileModifier) + 2);
+        r = Defense * r - Defense;
+        return r;
+    }
+    public float GetMagicBonus()
+    {
+        float r = 1;
+        if (MagicModifier >= 0) r *= (MagicModifier + 2) / 2.0f;
+        else r *= 2.0f / (Math.Abs(MagicModifier) + 2);
+        if (MagicTileModifier >= 0) r *= (MagicTileModifier + 2) / 2.0f;
+        else r *= 2.0f / (Math.Abs(MagicTileModifier) + 2);
+        r = Magic * r - Magic;
+        return r;
+    }
+    public float GetMagicDefenseBonus()
+    {
+        float r = 1;
+        if (MagicDefenseModifier >= 0) r *= (MagicDefenseModifier + 2) / 2.0f;
+        else r *= 2.0f / (Math.Abs(MagicDefenseModifier) + 2);
+        if (MagicDefenseTileModifier >= 0) r *= (MagicDefenseTileModifier + 2) / 2.0f;
+        else r *= 2.0f / (Math.Abs(MagicDefenseTileModifier) + 2);
+        r = MagicDefense * r - MagicDefense;
+        return r;
     }
 
     public bool MoveTo(Tile target)
@@ -282,6 +419,7 @@ public class Lifie : MonoBehaviour
         {
             transform.position = new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z);
             SelectableTiles.Clear();
+            UpdateTileModifiers();
             return true;
         }
         else return false;
@@ -321,6 +459,11 @@ public class Lifie : MonoBehaviour
         {
             return false;
         }
+        if (AP - attack.APDrain < 0)
+        {
+            GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("This lifie doesn't have enough AP for this attack!");
+            return false;
+        }
 
         RaycastHit[] hits;
         hits = Physics.RaycastAll(targetLifie.transform.position, new Vector3(0, -0.5f, 0));
@@ -332,14 +475,14 @@ public class Lifie : MonoBehaviour
                 {
                     if(!attack.isStatusAttack())
                     {
-                        float multiplier = ElementMultiplier(Element, targetLifie.Element);
+                        float multiplier = ElementMultiplier(attack.Element, targetLifie.Element);
                         float damage = CalculateDamage(attack.Power, attack.Category, targetLifie) * multiplier;
                         targetLifie.LP -= damage;
                         AP -= attack.APDrain;
                         string logtext = targetLifie.Name + " took " + (int)Math.Round(damage, MidpointRounding.AwayFromZero) + " damage from " + Name;
-                        if (multiplier > 1) logtext = logtext + "!\nSuper effective!";
-                        else if (multiplier < 1) logtext = logtext + "...\nNot very effective...";
-                        else logtext = logtext + ".";
+                        if (multiplier > 1) logtext = "Super effective!\n" + logtext + "!";
+                        else if (multiplier < 1) logtext = "Not very effective...\n" + logtext + "...";
+                        else logtext += ".";
 
                         GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(logtext);
                     } else
@@ -350,20 +493,19 @@ public class Lifie : MonoBehaviour
                         {
                             case 3:
                                 //Strength
-                                targetLifie.Strength = (int)Math.Round(targetLifie.Strength + targetLifie.Strength * attack.EffectPower, MidpointRounding.AwayFromZero);
+                                targetLifie.StrengthModifier += attack.EffectPower;
                                 temps = "strength";
                                 break;
                             case 4:
                                 //Defense
-                                targetLifie.Defense = (int)Math.Round(targetLifie.Defense + targetLifie.Defense * attack.EffectPower, MidpointRounding.AwayFromZero);
+                                targetLifie.DefenseModifier += attack.EffectPower;
                                 temps = "defense";
                                 break;
                             default:
-                                Debug.Log("Need to setup Lifie.Attack //stats change");
+                                Debug.Log("Need to setup Lifie.Attack //stats change case > 5");
                                 break;
                         }
-                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText
-                            (targetLifie.Name + "'s "+temps+" was increased by "+(int)Math.Round(attack.EffectPower * 100, MidpointRounding.AwayFromZero)+"%.");
+                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText (targetLifie.Name + "'s "+temps+" was increased!");
                     }
                     return true;
                 }
@@ -376,19 +518,19 @@ public class Lifie : MonoBehaviour
     public float CalculateDamage(int power, int attackCategory, Lifie defenderLifie)
     {
         float Damage;
-        int s;
-        int d;
+        float s;
+        float d;
         float modifier = 1;
 
         if (attackCategory == 1)
         {
-            s = Magic;
-            d = defenderLifie.MagicDefense;
+            s = GetMagic();
+            d = defenderLifie.GetMagicDefense();
         }
         else if (attackCategory == 2)
         {
-            s = Strength;
-            d = defenderLifie.Defense;
+            s = GetStrength();
+            d = defenderLifie.GetDefense();
         }
         else
         {

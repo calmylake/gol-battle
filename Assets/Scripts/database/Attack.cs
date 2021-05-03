@@ -12,9 +12,9 @@ public class Attack
     public int Element;
     public int RangeCapacity;
     public string Description;
-    public float EffectPower;
+    public int EffectPower;
 
-    public Attack(int id, string name, int category, int power, int apdrain, int element, int rangecapacity, string description, float effectpower = 0)
+    public Attack(int id, string name, int category, int power, int apdrain, int element, int rangecapacity, string description, int effectpower = 0)
     {
         Id = id;
         Name = name;
@@ -31,5 +31,10 @@ public class Attack
     {
         if (Category == 1 || Category == 2) return false;
         else return true;
+    }
+
+    public string GetElement()
+    {
+        return GameObject.Find("ElementDatabase").GetComponent<ElementDatabase>().GetElement(Element).Name;
     }
 }

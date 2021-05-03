@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
+    public int type = 0;
     public bool walkable = true;
     public bool current = false;
     public bool target = false;
@@ -19,6 +20,8 @@ public class Tile : MonoBehaviour
     void Start()
     {
         adjacencyList = new List<Tile>();
+        
+        if(type > 0 && type <= 5) GetComponent<Renderer>().material = Resources.Load<Material>("tilestextures/"+type);
     }
 
     private void Update()

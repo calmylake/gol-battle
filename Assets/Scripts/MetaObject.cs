@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MetaObject : MonoBehaviour
 {
@@ -13,8 +14,13 @@ public class MetaObject : MonoBehaviour
     List<GameObject> PlayableLifies;
     List<GameObject> OpponentLifies;
 
+    bool isFading;
+
     void Start()
     {
+
+        isFading = true;
+        GameObject.Find("WhiteImage").GetComponent<Image>().color = new Color(1,1,1,1);
 
         Tiles = new List<GameObject>();
         ReadCurrentTiles();
@@ -30,11 +36,50 @@ public class MetaObject : MonoBehaviour
 
         playerTurn = !playerTurn;
         nextTurn();
+
     }
 
     void Update()
     {
-        
+        foreach (GameObject tile in Tiles)
+        {
+            RaycastHit[] hits;
+            hits = Physics.RaycastAll(tile.transform.position, new Vector3(0, 0.5f, 0));
+            Lifie templifie;
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.gameObject.tag != "Lifie")
+                {
+                    templifie = hit.collider.gameObject.GetComponent<Lifie>();
+                    break;
+                }
+            }
+            switch (tile.GetComponent<Tile>().type)
+            {
+                case 1:
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    void FixedUpdate()
+    {
+        Fade();
+    }
+
+    void Fade()
+    {
+        if (isFading)
+        {
+            float valueToChange = Time.deltaTime / 3;
+
+            Image tempImage = GameObject.Find("WhiteImage").GetComponent<Image>();
+            tempImage.color = new Color(tempImage.color.r, tempImage.color.g, tempImage.color.b, tempImage.color.a - valueToChange);
+            if (tempImage.color.a <= 0) isFading = false;
+        }
     }
 
     private void ReadLifieLists()
@@ -105,7 +150,10 @@ public class MetaObject : MonoBehaviour
 
         foreach (GameObject Lifie in PlayableLifies.ToArray())
         {
-            Lifie.GetComponent<Lifie>().Enable();
+            Lifie templifie = Lifie.GetComponent<Lifie>();
+            templifie.Enable();
+            templifie.AP += 20;
+            if(templifie.AP > templifie.TotalAP) templifie.AP = templifie.TotalAP;
         }
         
         foreach(GameObject Lifie in OpponentLifies.ToArray())

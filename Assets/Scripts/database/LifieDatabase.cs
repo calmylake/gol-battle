@@ -8,7 +8,7 @@ public class LifieDatabase : MonoBehaviour
     List<Lifiee> Lifies;
     void Awake()
     {
-        BuildElementDatabase();
+        BuildLifieDatabase();
     }
 
     public Lifiee GetLifie(int id)
@@ -16,7 +16,7 @@ public class LifieDatabase : MonoBehaviour
         return Lifies.Find(Lifiee => Lifiee.Id == id);
     }
 
-    private void BuildElementDatabase()
+    private void BuildLifieDatabase()
     {
         Lifies = new List<Lifiee>()
         {

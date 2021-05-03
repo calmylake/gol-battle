@@ -227,7 +227,7 @@ public class Cursor : MonoBehaviour
         GameObject.Find("Category").GetComponent<Text>().text = "Category: " + categorystring;
         GameObject.Find("Power").GetComponent<Text>().text = "Power: " + tempAttack.Power;
         GameObject.Find("APDrain").GetComponent<Text>().text = "AP Drain: " + tempAttack.APDrain;
-        GameObject.Find("Element").GetComponent<Text>().text = "Element: " + tempAttack.Element;
+        GameObject.Find("Element").GetComponent<Text>().text = "Element: " + tempAttack.GetElement();
         GameObject.Find("RangeCapacity").GetComponent<Text>().text = "Range capacity: " + tempAttack.RangeCapacity;
         GameObject.Find("Description").GetComponent<Text>().text = tempAttack.Description;
         return tempAttack;
@@ -326,6 +326,7 @@ public class Cursor : MonoBehaviour
     private void CancelAction()
     {
         SelectedLifie.transform.position = CancelActionBackup;
+        SelectedLifie.UpdateTileModifiers();
         Reset();
         GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText("Canceled the action.");
     }
