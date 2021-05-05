@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class Cursor : MonoBehaviour
 {
+    public bool disabled;
+
     public bool SelectingTarget;
     Lifie SelectedLifie;
     Attack HoveringAttack;
@@ -29,6 +31,8 @@ public class Cursor : MonoBehaviour
 
     void Start()
     {
+        disabled = false;
+
         float R = 255 / 255.0f;
         float G = 196 / 255.0f;
         float B = 0 / 255.0f;
@@ -53,6 +57,8 @@ public class Cursor : MonoBehaviour
 
     void Update()
     {
+        if (disabled) return;
+
         if (SelectedLifie) SetColor(ColorSelected);
         else if (HoveringLifie) SetColor(ColorHover);
         else SetColor(ColorStandard);
@@ -288,7 +294,7 @@ public class Cursor : MonoBehaviour
                     }
                     if (hit.collider.gameObject.name == "WaitButton")
                     {
-                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(SelectedLifie + " is waiting.");
+                        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(SelectedLifie.Name + " is waiting.");
                         WaitAction();
                         break;
                     }

@@ -298,7 +298,7 @@ public class Lifie : MonoBehaviour
     }
     public string APToString()
     {
-        if (AP == 1) return "AP: " + (int) Math.Ceiling(AP);
+        if (AP <= 1) return "AP: " + (int) Math.Ceiling(AP);
         else return "AP: " + (int) Math.Round(AP, MidpointRounding.AwayFromZero);
     }
     
@@ -309,7 +309,7 @@ public class Lifie : MonoBehaviour
 
     public string LPToString()
     {
-        if(LP == 1) return "LP: " + (int) Math.Ceiling(LP);
+        if(LP <= 1) return "LP: " + (int) Math.Ceiling(LP);
         else return "LP: " + (int) Math.Round(LP, MidpointRounding.AwayFromZero);
     }
 
@@ -558,7 +558,6 @@ public class Lifie : MonoBehaviour
 
     public void Die()
     {
-        Destroy(gameObject);
-        GameObject.Find("LogBox").GetComponent<LogBox>().SetLogBoxText(Name + " fainted!");
+        GameObject.Find("MetaObject").GetComponent<MetaObject>().KillLifie(gameObject);
     }
 }
