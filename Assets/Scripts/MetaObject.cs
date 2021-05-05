@@ -41,9 +41,6 @@ public class MetaObject : MonoBehaviour
 
         playerTurn = !playerTurn;
         nextTurn();
-
-        Destroy(Player1Lifies[1]);
-        Destroy(Player1Lifies[2]);
     }
 
     void Update()
