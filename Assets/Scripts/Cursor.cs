@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -113,6 +114,56 @@ public class Cursor : MonoBehaviour
         GameObject.Find("HoveringLifieDefense").GetComponent<Text>().text = HoveringLifie.DefenseToString();
         GameObject.Find("HoveringLifieMagic").GetComponent<Text>().text = HoveringLifie.MagicToString();
         GameObject.Find("HoveringLifieMagicDefense").GetComponent<Text>().text = HoveringLifie.MagicDefenseToString();
+
+        Color tempcolor = new Color32(50, 50, 50, 255);
+        GameObject.Find("HoveringLifieTileBuffArrow").GetComponent<Text>().enabled = false;
+        GameObject.Find("HoveringLifieStrength").GetComponent<Text>().color = tempcolor;
+        GameObject.Find("HoveringLifieDefense").GetComponent<Text>().color = tempcolor;
+        GameObject.Find("HoveringLifieMagic").GetComponent<Text>().color = tempcolor;
+        GameObject.Find("HoveringLifieMagicDefense").GetComponent<Text>().color = tempcolor;
+
+        string tempstring = "";
+        string el1, el2;
+
+        switch (HoveringTile.type)
+        {
+            case 1:
+                el1 = "Strength";
+                el2 = "Magic";
+                break;
+            case 2:
+                el1 = "Defense";
+                el2 = "Magic Defense";
+                break;
+            case 3:
+                el1 = "Strength";
+                el2 = "Defense";
+                break;
+            case 4:
+                el1 = "Strength";
+                el2 = "Magic Defense";
+                break;
+            case 5:
+                el1 = "Magic";
+                el2 = "Magic Defense";
+                break;
+            default:
+                el1 = el2 = "";
+                break;
+        }
+        
+        if (el1 != "" && el2 != "")
+        {
+            tempstring = "+50% " + el1 + " and " + el2;
+            el1 = Regex.Replace(el1, " ", "");
+            el2 = Regex.Replace(el2, " ", "");
+            GameObject.Find("HoveringLifieTileBuffArrow").GetComponent<Text>().enabled = true;
+            GameObject.Find("HoveringLifie"+el1).GetComponent<Text>().color = new Color32(0, 183, 0, 255);
+            Debug.Log("element 2: "+el2);
+            GameObject.Find("HoveringLifie"+el2).GetComponent<Text>().color = new Color32(0, 183, 0, 255);
+    
+        }
+        GameObject.Find("HoveringLifieTileBuff").GetComponent<Text>().text = tempstring;
 
     }
     private void HideHoveringInfo()
